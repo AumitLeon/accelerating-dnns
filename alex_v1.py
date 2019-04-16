@@ -11,6 +11,7 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 import tensorflow as tf
 from keras.layers.convolutional import Conv2D, MaxPooling2D, ZeroPadding2D
 from keras.regularizers import l2
+from keras.models import load_model
 
 # define the model 
 # v1 of alexnet
@@ -148,6 +149,9 @@ history = model.fit_generator(train_generator,
                         nb_val_samples=800,
                         nb_epoch=20,
                         verbose=1)
+
+# save model weights
+model.save('alexnet_cats_dogs.h5')  # creates a HDF5 file 'my_model.h5'
 
 
 plt.subplot(1,2,1)
