@@ -13,6 +13,10 @@ from keras.layers.convolutional import Conv2D, MaxPooling2D, ZeroPadding2D
 from keras.regularizers import l2
 from keras.models import load_model
 
+
+# verify GPU usage
+sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+
 # define the model 
 # v1 of alexnet
 # highest performing so far
