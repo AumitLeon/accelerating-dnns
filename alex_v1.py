@@ -9,6 +9,8 @@ import numpy as np
 from keras.preprocessing.image import ImageDataGenerator
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 import tensorflow as tf
+from keras.layers.convolutional import Conv2D, MaxPooling2D, ZeroPadding2D
+from keras.regularizers import l2
 
 # define the model 
 # v1 of alexnet
