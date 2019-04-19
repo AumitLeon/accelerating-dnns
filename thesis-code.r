@@ -64,6 +64,103 @@ starbucks %>%
   ggplot(aes(x = carb, y = calories, color = type)) +
   geom_point() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-        panel.background = element_blank(), axis.line = element_line(colour = "black"))
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        axis.text=element_text(size=12),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Carbohydrates") +
+  ylab("Calories") +
+  ggtitle("Starbucks Menu Items Classified by Carbohydrates and Calories") 
 
 
+##### Used in the text description on the need for higher order classifiers
+# analyzing petite items
+petite.items <- starbucks %>%
+  filter(type == "petite")
+petite.items
+# 177.7778
+mean(petite.items$calories)
+# 23.33333
+mean(petite.items$carb)
+
+# analyzing bakery items
+bistro.items <- starbucks %>%
+  filter(type == "bistro box")
+bistro.items
+
+subset.starbucks <- starbucks %>%
+  filter(type == "bistro box" | type == "petite")
+
+# 377.5
+mean(bistro.items$calories)
+
+# 33.625
+mean(bistro.items$carb)
+
+
+linear.menuitems <- lm(calories~carb, data = subset.starbucks)
+summary(linear.menuitems)
+starbucks %>%
+  filter(type == "petite" | type == "bistro box") %>%
+  ggplot(aes(x = carb, y = calories, color = type)) +
+  geom_point() +
+  geom_abline(intercept = linear.menuitems$coefficients[[1]],
+              slope = linear.menuitems$coefficients[[2]],
+              col = "red") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        axis.text=element_text(size=12),
+        plot.title = element_text(hjust = 0.5)) +
+  xlab("Carbohydrates") +
+  ylab("Calories") +
+  ggtitle("Classifying Starbucks' petite and bistro box items") 
+
+
+
+
+
+
+
+### Graphing time over epochs
+library(tidyverse)
+library(ggplot2)
+accuracy <- c( 0.547375, 0.58865625, 0.61796875,
+               0.61634375, 0.6154375, 0.625125,
+               0.62253125, 0.6290625, 0.64690625,
+               0.64221875)
+
+mean(times)
+
+times <- c(517.086581945,
+           502.528299093,
+           505.651524782,
+           503.983413935,
+           506.136595964,
+           505.855699062,
+           505.65735507,
+           504.123223066,
+           503.380324125,
+           507.194954157)
+
+times_no_outlier <- ds %>%
+  select(times) %>%
+  filter(times < 515)
+
+mean_times_no_outlier <- mean(as.numeric(times_no_outlier$times))
+
+mean_times_no_outlier
+epochs <- c(1:10)
+ds <- data.frame(times, accuracy, as.factor(epochs))
+ds
+
+ds %>%
+  ggplot(aes(x = as.factor(epochs), y = times)) +
+  geom_point() + 
+  geom_hline(yintercept=mean(times), linetype="dashed", 
+             color = "red", size=1) + 
+  geom_hline(yintercept=mean_times_no_outlier, 
+             color = "red", size=1)
+
+### Citation for open intro
+openintro.citation <- citation(package = "openintro", lib.loc = NULL)
+## S3 method for class 'citation':
+toBibtex(openintro.citation)
