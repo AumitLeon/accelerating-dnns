@@ -1,6 +1,8 @@
 ### Alexnet using keras
 
-import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
 import keras
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Dropout, Flatten, Conv2D, MaxPooling2D
@@ -12,10 +14,20 @@ import tensorflow as tf
 from keras.layers.convolutional import Conv2D, MaxPooling2D, ZeroPadding2D
 from keras.regularizers import l2
 from keras.models import load_model
-
+from twilio.rest import TwilioRestClient
+import os
 
 # verify GPU usage
 sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+
+# Define callback time
+class TimeHistory(keras.callbacks.Callback):
+    def on_train_begin(self, logs={}):
+        self.times = []
+    def on_epoch_begin(self, batch, logs={}):
+        self.epoch_time_start = time.time()
+    def on_epoch_end(self, batch, logs={}):
+        self.times.append(time.time() - self.epoch_time_start)
 
 # define the model 
 # v1 of alexnet
@@ -120,14 +132,14 @@ test_datagen = ImageDataGenerator()
                                   
 
 train_generator = train_datagen.flow_from_directory(
-        '/home/aleon/data/cats_dogs/train',  
+       '/home/aleon/data/cats_dogs/train/',
         batch_size=batch_size,
         shuffle=True,
         target_size=input_size[1:],
         class_mode='categorical')  
 
 validation_generator = test_datagen.flow_from_directory(
-        '/home/aleon/data/cats_dogs/val',  
+        '/home/aleon/data/cats_dogs/val/',  
         batch_size=batch_size,
         target_size=input_size[1:],
         shuffle=True,
@@ -147,6 +159,7 @@ model.compile(loss='mse',
               metrics=['accuracy'])
 
 #model.compile(loss=keras.losses.categorical_crossentropy, optimizer='adam', metrics=["accuracy"])
+time_callback = TimeHistory()
 history = model.fit_generator(train_generator,
                         steps_per_epoch=2000,
                         validation_data=validation_generator,
@@ -154,9 +167,30 @@ history = model.fit_generator(train_generator,
                         nb_epoch=20,
                         verbose=1)
 
-# save model weights
-model.save('alexnet_cats_dogs.h5')  # creates a HDF5 file 'my_model.h5'
+times = time_callback.times
 
+with open('model_epoch_times_cat_dogs.txt', 'w') as f:
+    for item in times:
+        f.write("%s\n" % item)
+
+
+# save model weights
+model.save('cats_dogs_20epochs.h5')  # creates a HDF5 file 'my_model.h5'
+
+# sending text
+# Your Account Sid and Auth Token from twilio.com/console
+# DANGER! This is insecure. See http://twil.io/secure
+account_sid = os.environ['TWILIO_ACT_ID']
+auth_token = os.environ['TWILIO_AUTH_TOKEN']
+client = TwilioRestClient(account_sid, auth_token)
+
+message = client.messages .create(
+        body="Model has completed training!",
+        from_=os.environ['TWILIO_FROM_NUM'],
+        to=os.environ['TWILIO_FROM_NUM']
+    )
+
+print(message.sid)
 
 plt.subplot(1,2,1)
 plt.plot(history.history['acc'])
@@ -175,4 +209,4 @@ plt.xlabel('Epoch')
 plt.legend(['train', 'test'], loc='upper left') 
 
 plt.tight_layout()
-plt.savefig('model_performance.png')
+plt.savefig('model_performance_cat_dogs_20epochs.png')
