@@ -18,6 +18,7 @@ from twilio.rest import TwilioRestClient
 from keras.utils import multi_gpu_model
 import time
 import pickle
+import os
 
 # Define callback time
 class TimeHistory(keras.callbacks.Callback):
@@ -148,21 +149,8 @@ with mirrored_strategy.scope():
 
     model.summary()
 
-
-# define data parallelism
-# (4) Compile 
-#model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-
-
-
     from keras.optimizers import SGD
-    #sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    #model.compile(loss='mse',
-    #             optimizer=sgd,
-    #             metrics=['accuracy'])
-
-
+    
     sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(loss='mse',
                 optimizer=sgd,
@@ -177,7 +165,7 @@ history = model.fit_generator(train_generator,
                         validation_data=validation_generator,
                         nb_val_samples=800,
                         nb_epoch=10,
-                        verbose=1,
+                        verbose=1
                         callbacks=[time_callback]
 )
 times = time_callback.times
@@ -198,14 +186,14 @@ with open('mirrored_trainHistoryDict', 'wb') as file_pi:
 # sending text
 # Your Account Sid and Auth Token from twilio.com/console
 # DANGER! This is insecure. See http://twil.io/secure
-account_sid = 'AC214910fd57f11cbc7aeec6d4a5b985f1'
-auth_token = '0e06d3591aadace71fde80308b59a480'
+account_sid = os.environ['TWILIO_ACT_ID']
+auth_token = os.environ['TWILIO_AUTH_TOKEN']
 client = TwilioRestClient(account_sid, auth_token)
 
 message = client.messages .create(
         body="Mirrored strat has completed training!",
-        from_='+16467981797',
-        to='+16462484185'
+        from_=os.environ['TWILIO_FROM_NUM'],
+        to=os.environ['TWILIO_TO_NUM'],
     )
 
 print(message.sid)
