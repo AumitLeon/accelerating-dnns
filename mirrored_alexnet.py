@@ -165,7 +165,7 @@ history = model.fit_generator(train_generator,
                         validation_data=validation_generator,
                         nb_val_samples=800,
                         nb_epoch=10,
-                        verbose=1
+                              verbose=1,
                         callbacks=[time_callback]
 )
 times = time_callback.times
