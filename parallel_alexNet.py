@@ -15,24 +15,28 @@ from keras.layers.convolutional import Conv2D, MaxPooling2D, ZeroPadding2D
 from keras.regularizers import l2
 from keras.models import load_model
 from twilio.rest import TwilioRestClient
+from keras.utils import multi_gpu_model
+import time
+import pickle
 import os
-
-# verify GPU usage
-sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 # Define callback time
 class TimeHistory(keras.callbacks.Callback):
     def on_train_begin(self, logs={}):
         self.times = []
+
     def on_epoch_begin(self, batch, logs={}):
         self.epoch_time_start = time.time()
+
     def on_epoch_end(self, batch, logs={}):
         self.times.append(time.time() - self.epoch_time_start)
 
-# define the model 
-# v1 of alexnet
-# highest performing so far
-# (3) Create a sequential model
+# verify GPU usage
+sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+
+
+# variant of alexnet
+#Instantiate an empty model
 model = Sequential()
 
 # 1st Convolutional Layer
@@ -110,10 +114,12 @@ model.add(Activation('softmax'))
 
 model.summary()
 
-# (4) Compile 
-model.compile(loss='categorical_crossentropy', optimizer='adam',\
- metrics=['accuracy'])
 
+
+# define parallel model
+parallel_model = multi_gpu_model(model, gpus=2)
+# (4) Compile 
+#model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 batch_size = 16
 input_size = (3,227,227)
@@ -154,28 +160,36 @@ from keras.optimizers import SGD
 
 
 sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-model.compile(loss='mse',
+parallel_model.compile(loss='mse',
               optimizer=sgd,
               metrics=['accuracy'])
 
-#model.compile(loss=keras.losses.categorical_crossentropy, optimizer='adam', metrics=["accuracy"])
+
+
 time_callback = TimeHistory()
-history = model.fit_generator(train_generator,
+#model.compile(loss=keras.losses.categorical_crossentropy, optimizer='adam', metrics=["accuracy"])
+history = parallel_model.fit_generator(train_generator,
                         steps_per_epoch=2000,
                         validation_data=validation_generator,
                         nb_val_samples=800,
-                        nb_epoch=20,
-                        verbose=1)
-
+                        nb_epoch=10,
+                        verbose=1,
+                        callbacks=[time_callback]
+)
 times = time_callback.times
 
-with open('model_epoch_times_cat_dogs.txt', 'w') as f:
+with open('parallel_model_10epoch_times.txt', 'w') as f:
     for item in times:
         f.write("%s\n" % item)
 
-
 # save model weights
-model.save('cats_dogs_20epochs.h5')  # creates a HDF5 file 'my_model.h5'
+model.save('parallel_cats_dogs_10epochs_2nd.h5')  # creates a HDF5 file 'my_model.h5'
+
+
+# save history object
+with open('trainHistoryDict', 'wb') as file_pi:
+    pickle.dump(history.history, file_pi)
+
 
 # sending text
 # Your Account Sid and Auth Token from twilio.com/console
@@ -185,7 +199,7 @@ auth_token = os.environ['TWILIO_AUTH_TOKEN']
 client = TwilioRestClient(account_sid, auth_token)
 
 message = client.messages .create(
-        body="Model has completed training!",
+        body="Parallelized has completed training!",
         from_=os.environ['TWILIO_FROM_NUM'],
         to=os.environ['TWILIO_FROM_NUM']
     )
@@ -209,4 +223,4 @@ plt.xlabel('Epoch')
 plt.legend(['train', 'test'], loc='upper left') 
 
 plt.tight_layout()
-plt.savefig('model_performance_cat_dogs_20epochs.png')
+plt.savefig('parallel_model_perf_cats_dogs_10epochs_2nd.png')
