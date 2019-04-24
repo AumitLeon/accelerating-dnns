@@ -98,13 +98,65 @@ mean(bistro.items$carb)
 
 
 linear.menuitems <- lm(calories~carb, data = subset.starbucks)
+
+bistro.subset <- starbucks %>%
+  filter(type == "bistro box")
+
+petite.subset <- starbucks %>%
+  filter(type == "petite")
+
+parfait.subset <- starbucks %>%
+  filter(type == "parfait")
+
+hb.subset <- starbucks %>%
+  filter(type == "hot breakfast")
+
+salad.subset <- starbucks %>%
+  filter(type == "salad")
+
+salad.subset
+
+sandwich.subset <- starbucks %>%
+  filter(type == "sandwich")
+
+bakery.subset <- starbucks %>%
+  filter(type == "bakery")
+
+linear.bistro <- lm(calories~carb, data = bistro.subset)
+summary(linear.bistro)
+linear.petite <- lm(calories~carb, data = petite.subset)
+summary(linear.petite)
+linear.parfait <- lm(calories~carb, data = parfait.subset)
+linear.hb <- lm(calories~carb, data = hb.subset)
+linear.salad <- lm(calories~carb, data = salad.subset)
+summary(linear.salad)
+linear.sandwich <- lm(calories~carb, data = sandwich.subset)
+linear.bakery <- lm(calories~carb, data = bakery.subset)
+
 summary(linear.menuitems)
 starbucks %>%
-  filter(type == "petite" | type == "bistro box") %>%
   ggplot(aes(x = carb, y = calories, color = type)) +
   geom_point() +
-  geom_abline(intercept = linear.menuitems$coefficients[[1]],
-              slope = linear.menuitems$coefficients[[2]],
+  geom_abline(intercept = linear.bistro$coefficients[[1]],
+              slope = linear.bistro$coefficients[[2]],
+              col = "#916114") +
+  geom_abline(intercept = linear.petite$coefficients[[1]],
+              slope = linear.petite$coefficients[[2]],
+              col = "#06d7db") +
+  geom_abline(intercept = linear.parfait$coefficients[[1]],
+              slope = linear.parfait$coefficients[[2]],
+              col = "#4add06") +
+  geom_abline(intercept = linear.hb$coefficients[[1]],
+              slope = linear.hb$coefficients[[2]],
+              col = "#377c17") +
+  geom_abline(intercept = linear.salad$coefficients[[1]],
+              slope = linear.salad$coefficients[[2]],
+              col = "#a905db") +
+  geom_abline(intercept = linear.sandwich$coefficients[[1]],
+              slope = linear.sandwich$coefficients[[2]],
+              col = "#ff0284") +
+  geom_abline(intercept = linear.bakery$coefficients[[1]],
+              slope = linear.bakery$coefficients[[2]],
               col = "red") +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
@@ -112,10 +164,7 @@ starbucks %>%
         plot.title = element_text(hjust = 0.5)) +
   xlab("Carbohydrates") +
   ylab("Calories") +
-  ggtitle("Classifying Starbucks' petite and bistro box items") 
-
-
-
+  ggtitle("Linear Regression on Starbucks Menuitems") 
 
 
 
