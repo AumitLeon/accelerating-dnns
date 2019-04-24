@@ -19,6 +19,7 @@ from keras.regularizers import l2
 from keras.models import load_model
 from twilio.rest import TwilioRestClient
 import os
+import pickle
 
 # verify GPU usage
 sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
@@ -179,6 +180,10 @@ with open('tiny_imagenet_baseline_times.txt', 'w') as f:
 
 # save model weights
 model.save('tiny_imagenet_baseline_20epochs.h5')  # creates a HDF5 file 'my_model.h5'
+
+# save history object
+with open('tiny_imagenet_baseline_20epochs_history', 'wb') as file_pi:
+    pickle.dump(history.history, file_pi)
 
 # sending text
 # Your Account Sid and Auth Token from twilio.com/console

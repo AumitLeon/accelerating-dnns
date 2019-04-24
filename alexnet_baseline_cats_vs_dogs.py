@@ -17,6 +17,7 @@ from keras.regularizers import l2
 from keras.models import load_model
 from twilio.rest import TwilioRestClient
 import os
+import pickle
 
 # verify GPU usage
 sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
@@ -178,6 +179,9 @@ with open('cat_dogs_baseline_20epoch_times.txt', 'w') as f:
 # save model weights
 model.save('cat_dogs_baseline_20epochs.h5')  # creates a HDF5 file 'my_model.h5'
 
+with open('cat_dogs_baseline_20epochs_history', 'wb') as file_pi:
+    pickle.dump(history.history, file_pi)
+
 # sending text
 # Your Account Sid and Auth Token from twilio.com/console
 # DANGER! This is insecure. See http://twil.io/secure
@@ -186,7 +190,7 @@ auth_token = os.environ['TWILIO_AUTH_TOKEN']
 client = TwilioRestClient(account_sid, auth_token)
 
 message = client.messages .create(
-        body="Model has completed training!",
+        body="Kona model has completed training!",
         from_=os.environ['TWILIO_FROM_NUM'],
         to=os.environ['TWILIO_FROM_NUM']
     )
