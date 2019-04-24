@@ -108,7 +108,7 @@ model.add(Dropout(0.4))
 model.add(BatchNormalization())
 
 # Output Layer
-model.add(Dense(2))
+model.add(Dense(200))
 model.add(Activation('softmax'))
 
 model.summary()
@@ -172,13 +172,13 @@ history = model.fit_generator(train_generator,
 
 times = time_callback.times
 
-with open('model_epoch_times_cat_dogs.txt', 'w') as f:
+with open('tiny_imagenet_baseline_times.txt', 'w') as f:
     for item in times:
         f.write("%s\n" % item)
 
 
 # save model weights
-model.save('cats_dogs_20epochs.h5')  # creates a HDF5 file 'my_model.h5'
+model.save('tiny_imagenet_baseline_20epochs.h5')  # creates a HDF5 file 'my_model.h5'
 
 # sending text
 # Your Account Sid and Auth Token from twilio.com/console
@@ -212,4 +212,4 @@ plt.xlabel('Epoch')
 plt.legend(['train', 'test'], loc='upper left') 
 
 plt.tight_layout()
-plt.savefig('model_performance_cat_dogs_20epochs.png')
+plt.savefig('perf_tiny_imagenet_baseline_20epochs.png')
