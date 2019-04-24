@@ -142,7 +142,7 @@ train_generator = train_datagen.flow_from_directory(
         class_mode='categorical')  
 
 validation_generator = test_datagen.flow_from_directory(
-        '/home/aleon/data/cats_dogs/val/',  
+        '/home/aleon/tiny-imagenet/tiny-imagenet-200/val/test_img/',  
         batch_size=batch_size,
         target_size=input_size[1:],
         shuffle=True,
