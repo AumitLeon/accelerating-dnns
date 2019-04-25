@@ -14,7 +14,7 @@ import tensorflow as tf
 from keras.layers.convolutional import Conv2D, MaxPooling2D, ZeroPadding2D
 from keras.regularizers import l2
 from keras.models import load_model
-from twilio.rest import TwilioRestClient
+from twilio.rest import Client
 from keras.utils import multi_gpu_model
 import time
 import pickle
@@ -117,7 +117,7 @@ with mirrored_strategy.scope():
     # Passing it to a dense layer
     model.add(Flatten())
     # 1st Dense Layer
-    model.add(Dense(4096, input_shape=(224*224*3,)))
+    model.add(Dense(4096, input_shape=(56*56*3,)))
     model.add(Activation('relu'))
     # Add Dropout to prevent overfitting
     model.add(Dropout(0.4))
@@ -175,26 +175,37 @@ history = parallel_model.fit_generator(train_generator,
                         steps_per_epoch=2000,
                         validation_data=validation_generator,
                         nb_val_samples=800,
-                        nb_epoch=10,
+                        nb_epoch=20,
                         verbose=1,
                         callbacks=[time_callback]
 )
 times = time_callback.times
 
-with open('mirrored_tinyImagenet_10epoch_times.txt', 'w') as f:
+with open('mirrored_tinyImagenet_20epoch_times.txt', 'w') as f:
     for item in times:
         f.write("%s\n" % item)
 
 # save model weights
-model.save('mirrored_tinyImagenet_10epochs_2nd.h5')  # creates a HDF5 file 'my_model.h5'
+model.save('mirrored_tinyImagenet_20epochs_2nd.h5')  # creates a HDF5 file 'my_model.h5'
 
 
 # save history object
-with open('mirrored_trainHistoryDict', 'wb') as file_pi:
+with open('mirrored_tinyImagnet_20_epochstrainHistoryDict', 'wb') as file_pi:
     pickle.dump(history.history, file_pi)
 
 
 # sending text
+# sending text
+# Your Account Sid and Auth Token from twilio.com/console
+account_sid = os.environ['TWILIO_ACT_ID']
+auth_token = os.environ['TWILIO_AUTH_TOKEN']
+client = TwilioRestClient(account_sid, auth_token)
+
+message = client.messages .create(
+        body="Model has completed training!",
+        from_=os.environ['TWILIO_FROM_NUM'],
+        to=os.environ['TWILIO_TO_NUM']
+    )
 
 
 print(message.sid)
@@ -216,4 +227,4 @@ plt.xlabel('Epoch')
 plt.legend(['train', 'test'], loc='upper left') 
 
 plt.tight_layout()
-plt.savefig('mirrored_tinyImagenet_10epochs_2nd.png')
+plt.savefig('mirrored_tinyImagenet_20epochs_2nd.png')
