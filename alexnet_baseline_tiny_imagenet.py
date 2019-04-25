@@ -17,7 +17,7 @@ import tensorflow as tf
 from keras.layers.convolutional import Conv2D, MaxPooling2D, ZeroPadding2D
 from keras.regularizers import l2
 from keras.models import load_model
-from twilio.rest import TwilioRestClient
+from twilio.rest import Client
 import os
 import pickle
 
@@ -187,7 +187,6 @@ with open('tiny_imagenet_baseline_20epochs_history', 'wb') as file_pi:
 
 # sending text
 # Your Account Sid and Auth Token from twilio.com/console
-# DANGER! This is insecure. See http://twil.io/secure
 account_sid = os.environ['TWILIO_ACT_ID']
 auth_token = os.environ['TWILIO_AUTH_TOKEN']
 client = TwilioRestClient(account_sid, auth_token)
@@ -195,7 +194,7 @@ client = TwilioRestClient(account_sid, auth_token)
 message = client.messages .create(
         body="Model has completed training!",
         from_=os.environ['TWILIO_FROM_NUM'],
-        to=os.environ['TWILIO_FROM_NUM']
+        to=os.environ['TWILIO_TO_NUM']
     )
 
 print(message.sid)

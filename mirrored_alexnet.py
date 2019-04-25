@@ -171,7 +171,7 @@ with mirrored_strategy.scope():
 
 time_callback = TimeHistory()
 #model.compile(loss=keras.losses.categorical_crossentropy, optimizer='adam', metrics=["accuracy"])
-history = parallel_model.fit_generator(train_generator,
+history = model.fit_generator(train_generator,
                         steps_per_epoch=2000,
                         validation_data=validation_generator,
                         nb_val_samples=800,
